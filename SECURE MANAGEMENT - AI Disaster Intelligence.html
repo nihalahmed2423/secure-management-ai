@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://127.0.0.1:8000/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECURE MANAGEMENT - AI Disaster Intelligence</title>
+  
+  <!-- Styling & Map Libraries -->
+  <link rel="stylesheet" href="./SECURE MANAGEMENT - AI Disaster Intelligence_files/leaflet.css">
+  <link rel="stylesheet" href="./SECURE MANAGEMENT - AI Disaster Intelligence_files/style.css">
+  
+  <!-- JS Libraries -->
+  <script src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/three.min.js.download"></script>
+  <script src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/leaflet.js.download"></script>
+  <script src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/chart.js.download"></script>
+</head>
+<body>
+
+  <!-- Entry Visual Experience (Three.js) -->
+  <section id="hero-landing" class="hidden">
+    <div id="three-canvas-container"><canvas width="1536" height="782" style="display: block; width: 1536px; height: 782px;"></canvas></div>
+    <div class="hero-overlay">
+      <h1>SECURE MANAGEMENT</h1>
+      <p class="subtitle">AI-POWERED DISASTER INTELLIGENCE</p>
+      
+      <div id="contact-form" style="margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <label for="user-phone" style="font-size: 0.9rem; color: #cbd5e1; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Emergency Contact Registration</label>
+        <input type="tel" id="user-phone" placeholder="Enter Mobile Number" style="padding: 1rem; font-size: 1.1rem; border-radius: 4px; border: 2px solid var(--accent-cyan); background: rgba(15, 23, 42, 0.8); color: #fff; text-align: center; width: 280px; box-sizing: border-box; font-weight: bold; letter-spacing: 1px;">
+        <button id="btn-enter" onclick="enterCommandCenter()" style="margin-top: 10px; width: 280px;">ENTER COMMAND CENTER</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Command Center Dashboard -->
+  <main id="command-center" class="">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <h2>SECURE MANAGEMENT</h2>
+      <div class="system-status">
+        <span class="status-dot"></span> SYSTEM ONLINE
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Control Panel -->
+      <section class="panel control-panel">
+        <h3>LOCATION SELECTOR</h3>
+        <div class="form-group" style="background: rgba(0, 242, 255, 0.05); padding: 15px; border-radius: 6px; border: 1px solid var(--accent-cyan); margin-bottom: 1rem;">
+          <label for="pincode-input" style="color: var(--accent-cyan); font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px;">Enter Pincode (Town/Village)</label>
+          <input type="text" id="pincode-input" placeholder="Try 781001 (Assam) or 400001 (Mumbai)" style="width: 100%; padding: 0.8rem; font-size: 1.1rem; background: #0f172a; border: 2px solid #334155; color: #fff; border-radius: 4px; margin-bottom: 0.5rem; box-sizing: border-box;">
+          <div id="detected-location" style="font-size: 0.85rem; color: rgb(148, 163, 184); min-height: 20px; font-style: italic;">Awaiting input...</div>
+        </div>
+        <div class="button-group">
+          <button id="btn-predict" onclick="triggerPincodePrediction()">PREDICT RISK</button>
+          <button id="btn-cancel" onclick="resetSelection()">RESET</button>
+        </div>
+
+        <!-- 2-Way Tracker / SOS Feature -->
+        <div class="form-group" style="background: rgba(255, 51, 68, 0.1); padding: 15px; border-radius: 6px; border: 1px solid var(--risk-high); margin-top: 1.5rem;">
+          <h4 style="color: var(--risk-high); margin: 0 0 8px 0; font-size: 1.1rem;">🚨 EMERGENCY SOS</h4>
+          <p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">Broadcast your precise live location. This allows Rescue Teams to track you, while you track them on the map.</p>
+          <button id="btn-sos" onclick="triggerSOS()" style="width: 100%; padding: 0.8rem; background: var(--risk-high); color: #fff; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.3s;">SHARE LIVE LOCATION</button>
+          <div id="sos-status" style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--risk-high); display: none; font-weight: bold;"></div>
+        </div>
+
+        <hr class="panel-divider">
+
+        <!-- Area to Secure First -->
+        <div id="priority-location-card" class="priority-card hidden">
+          <h4>🚨 AREA TO SECURE FIRST</h4>
+          <div id="priority-location-name" class="priority-title">626126</div>
+          <div id="priority-score" class="priority-score-badge">11.46%</div>
+          <div id="priority-risk-tag" class="risk-tag" style="color: var(--risk-none);">NO RISK</div>
+          <div class="recommendations">
+            <strong>Recommended Resources:</strong>
+            <ul id="priority-resource-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center Map View -->
+      <section class="panel map-panel">
+        <h3>RISK SURVEILLANCE MAP</h3>
+        <div id="map" class="leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(-14px, 9px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 18; transform: translate3d(99px, 238px, 0px) scale(1);"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/14@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(46px, 17px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/14@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(302px, 17px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/13@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(46px, -239px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/13@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(302px, -239px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/15@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(46px, 273px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/15@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(302px, 273px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/14@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-210px, 17px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/14@2x(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(558px, 17px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/13@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-210px, -239px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/13@2x(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(558px, -239px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/15@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-210px, 273px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/15@2x(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(558px, 273px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/12@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(46px, -495px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/12@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(302px, -495px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/12@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-210px, -495px, 0px); opacity: 1;"><img alt="" src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/12@2x(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(558px, -495px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="940" height="713" viewBox="-64 -68 940 713" style="transform: translate3d(-64px, -68px, 0px);"><g></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(5892.5px, 3617px, 0px) scale(16);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="http://127.0.0.1:8000/#" title="Zoom in" role="button" aria-label="Zoom in" aria-disabled="false"><span aria-hidden="true">+</span></a><a class="leaflet-control-zoom-out" href="http://127.0.0.1:8000/#" title="Zoom out" role="button" aria-label="Zoom out" aria-disabled="false"><span aria-hidden="true">−</span></a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com/" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © OpenStreetMap contributors © CARTO</div></div></div></div>
+      </section>
+
+      <!-- Right Analytics & Priority Column -->
+      <section class="panel analytics-panel">
+        <h3>SITUATIONAL AWARENESS</h3>
+        
+        <div id="weather-card" class="data-card">
+          <h4>Live Weather Telemetry</h4>
+          <div class="metrics-grid">
+            <div><span>Rainfall:</span> <strong id="m-rain">12 mm</strong></div>
+            <div><span>Wind:</span> <strong id="m-wind">15 km/h</strong></div>
+            <div><span>Humidity:</span> <strong id="m-humidity">91%</strong></div>
+            <div><span>Pressure:</span> <strong id="m-pressure">998 hPa</strong></div>
+          </div>
+        </div>
+
+        <!-- Live Asset Tracker -->
+        <h3 style="margin-top: 1.5rem;">RESCUE TEAM TRACKER</h3>
+        <div id="asset-tracker-list" class="data-card" style="padding: 0.8rem; background: #0f172a; border-radius: 4px; border-left: 4px solid var(--risk-less); font-size: 0.9rem;"><div class="queue-placeholder">Awaiting dispatch orders...</div></div>
+
+        <!-- Real Nearby Hospitals -->
+        <div id="hospital-card" class="data-card hidden" style="margin-top: 1rem; padding: 0.8rem; background: rgba(34, 204, 102, 0.1); border: 1px solid var(--risk-none); border-radius: 4px;">
+          <h4 style="margin: 0 0 0.5rem 0; color: var(--risk-none);">🏥 Active Medical Facilities (5km Scan)</h4>
+          <ul id="hospital-list" style="margin: 0; padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.6; list-style-type: none; padding-left: 0;"><li style="margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <strong style="color: #66b3ff;">Government Hospital, Kunnur</strong><br>
+                    <span style="font-size: 0.8rem; color: #94a3b8;">🏥 Standard Hospital • Located within 5km</span><br>
+                    <div style="margin-top: 4px; display: flex; gap: 12px;">
+                        <a href="https://www.google.com/maps/search/?api=1&amp;query=Government%20Hospital%2C%20Kunnur+9.5865151,77.6993822" target="_blank" style="font-size: 0.75rem; color: #66b3ff; text-decoration: underline;">📄 View Details &amp; Contact</a>
+                        <a href="https://www.google.com/maps/dir/?api=1&amp;destination=9.5865151,77.6993822" target="_blank" style="font-size: 0.75rem; color: var(--risk-none); text-decoration: underline;">🚑 Route Ambulances</a>
+                    </div>
+                </li><li style="margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <strong style="color: #66b3ff;">Government Hospital, Nathampatti</strong><br>
+                    <span style="font-size: 0.8rem; color: #94a3b8;">🏥 Standard Hospital • Located within 5km</span><br>
+                    <div style="margin-top: 4px; display: flex; gap: 12px;">
+                        <a href="https://www.google.com/maps/search/?api=1&amp;query=Government%20Hospital%2C%20Nathampatti+9.6009693,77.7300528" target="_blank" style="font-size: 0.75rem; color: #66b3ff; text-decoration: underline;">📄 View Details &amp; Contact</a>
+                        <a href="https://www.google.com/maps/dir/?api=1&amp;destination=9.6009693,77.7300528" target="_blank" style="font-size: 0.75rem; color: var(--risk-none); text-decoration: underline;">🚑 Route Ambulances</a>
+                    </div>
+                </li></ul>
+        </div>
+
+        <h3>EMERGENCY PRIORITY</h3>
+        <div id="priority-list" class="priority-queue">
+          <div class="queue-placeholder">Select a location to assess risk priorities.</div>
+        </div>
+
+        <!-- Emergency Communication to Locals -->
+        <h3 style="margin-top: 1.5rem;">PUBLIC COMMUNICATIONS</h3>
+        <div id="comm-card" class="data-card" style="background: rgba(0, 242, 255, 0.05); border: 1px solid var(--accent-cyan); padding: 0.8rem; border-radius: 4px;">
+          <h4 style="margin: 0 0 0.5rem 0; color: var(--accent-cyan);">📡 Auto-Generated Broadcast</h4>
+          <textarea id="public-alert-msg" rows="3" style="width: 100%; background: #0f172a; color: #fff; border: 1px solid #334155; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box;" readonly="">Awaiting risk analysis...</textarea>
+          <button id="btn-broadcast" onclick="broadcastAlert()" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; background: var(--accent-cyan); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.3s;">BROADCAST TO LOCALS &amp; NATIONAL CHANNELS</button>
+          <div id="broadcast-status" style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--risk-none); display: none;">✅ Alerts transmitted to local networks and National Broadcast Channels!</div>
+        </div>
+      </section>
+      
+    </div>
+
+    <!-- Alert Modal / Banner -->
+    <div id="alert-banner" class="alert-banner hidden">
+      <div id="alert-content"></div>
+      <button onclick="closeAlert()">Acknowledge</button>
+    </div>
+  </main>
+
+  <script src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/app.js.download"></script>
+  <script src="./SECURE MANAGEMENT - AI Disaster Intelligence_files/map.js.download"></script>
+
+
+</body></html>

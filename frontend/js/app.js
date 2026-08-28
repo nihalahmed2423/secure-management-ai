@@ -1,0 +1,68 @@
+// 3D Visual Entry Animation (Three.js Setup)
+function init3DScene() {
+  const container = document.getElementById('three-canvas-container');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+
+  // Storm Particle Simulation
+  const particleCount = 1500;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount * 3; i += 3) {
+    positions[i] = (Math.random() - 0.5) * 10;
+    positions[i + 1] = Math.random() * 10;
+    positions[i + 2] = (Math.random() - 0.5) * 10;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const material = new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.03 });
+  const rain = new THREE.Points(geometry, material);
+  scene.add(rain);
+
+  camera.position.z = 5;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const p = geometry.attributes.position.array;
+    for (let i = 1; i < particleCount * 3; i += 3) {
+      p[i] -= 0.05;
+      if (p[i] < -5) p[i] = 5;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+
+  animate();
+}
+
+function enterCommandCenter() {
+  const phoneInput = document.getElementById('user-phone');
+  const statusLabel = document.getElementById('login-status');
+
+  if (phoneInput && phoneInput.value.trim().length < 5) {
+      statusLabel.innerText = "Please enter a valid emergency contact number.";
+      phoneInput.focus();
+      return;
+  }
+  
+  window.userPhoneNumber = phoneInput.value.trim();
+
+  const hero = document.getElementById('hero-landing');
+  const dashboard = document.getElementById('command-center');
+  
+  hero.style.opacity = 0;
+  setTimeout(() => {
+    hero.style.display = 'none';
+    dashboard.classList.remove('hidden');
+    initMap();
+  }, 1000);
+}
+
+window.onload = () => {
+  init3DScene();
+};

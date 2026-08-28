@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE MANAGEMENT</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        .cinematic-bg {
+            background: radial-gradient(circle at center, #1f2937, #000);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .text-glow {
+            text-shadow: 0 0 10px rgba(255,0,0,0.8);
+        }
+        #map { height: 100%; width: 100%; border-radius: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div id="landing" class="cinematic-bg">
+        <h1 class="text-6xl font-bold mb-4 text-red-600 text-glow">SECURE MANAGEMENT</h1>
+        <p class="text-xl mb-8">Build the intelligence that helps a city respond before chaos takes over.</p>
+        <button onclick="enterSystem()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded shadow-lg transition duration-300">
+            ENTER SECURE MANAGEMENT
+        </button>
+    </div>
+
+    <div id="dashboard" class="hidden min-h-screen p-4 flex flex-col">
+        <header class="flex justify-between items-center bg-gray-800 p-4 rounded mb-4">
+            <h2 class="text-2xl font-bold text-red-500">COMMAND CENTER</h2>
+            <div class="flex gap-4">
+                <span id="sys-status" class="text-green-400">System: ONLINE</span>
+                <button onclick="simulateStorm()" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-1 rounded text-white font-bold">SIMULATE STORM</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+            <!-- Map Section -->
+            <div class="col-span-2 bg-gray-800 p-1 rounded h-[600px] relative">
+                <div id="map"></div>
+            </div>
+
+            <!-- Risk Details -->
+            <div class="bg-gray-800 p-4 rounded flex flex-col gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-orange-500 mb-2" id="selected-location">VELACHERY</h3>
+                    <div class="space-y-2 text-sm bg-gray-900 p-3 rounded">
+                        <p>Risk Score: <span id="risk-score" class="font-bold">25/100</span></p>
+                        <p>Status: <span id="risk-status" class="text-green-500 font-bold">NO RISK</span></p>
+                        <p>Prediction Confidence: <span id="confidence">87%</span></p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-2">Live Conditions</h4>
+                    <div class="space-y-1 text-sm bg-gray-900 p-3 rounded">
+                        <p>Rainfall: <span id="rainfall">10 mm</span></p>
+                        <p>Water Level: <span id="water-level">5 cm</span></p>
+                        <p>Road Blocks: <span id="road-blocks">0</span></p>
+                        <p>Power Affected: <span id="power">0%</span></p>
+                    </div>
+                </div>
+
+                <div id="ai-recommendation" class="hidden bg-red-900 border border-red-500 p-3 rounded text-sm mt-2">
+                    <h4 class="font-bold text-white mb-1">Recommended Action:</h4>
+                    <ul class="list-disc pl-5 text-red-100">
+                        <li>Deploy 2 Rescue Teams</li>
+                        <li>Send 1 Ambulance</li>
+                        <li>Issue Citizen Alert</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Explainable AI Panel -->
+            <div id="explainable-ai" class="hidden col-span-1 md:col-span-3 bg-gray-800 p-4 rounded mt-4">
+                <h4 class="text-xl font-bold text-blue-400 border-b border-gray-700 pb-2 mb-4">WHY CRITICAL? (AI Explanation)</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm" id="factors-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let riskCircle;
+
+        function initMap() {
+            // Center on Chennai, India
+            map = L.map('map').setView([12.9815, 80.2180], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+            }).addTo(map);
+
+            // Add marker for Velachery
+            riskCircle = L.circle([12.9815, 80.2180], {
+                color: 'green',
+                fillColor: '#0f0',
+                fillOpacity: 0.3,
+                radius: 1500
+            }).addTo(map);
+            riskCircle.bindPopup("<b>Velachery</b><br>Risk: LOW");
+        }
+
+        function enterSystem() {
+            document.getElementById('landing').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            checkHealth();
+            setTimeout(initMap, 100); // Wait for div to be visible
+        }
+
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/system/health');
+                const data = await response.json();
+                if(data.status === 'ok') {
+                    document.getElementById('sys-status').innerText = 'System: ONLINE (Live APIs)';
+                }
+            } catch(e) {
+                document.getElementById('sys-status').innerText = 'System: OFFLINE / SIMULATION';
+                document.getElementById('sys-status').classList.replace('text-green-400', 'text-yellow-400');
+            }
+        }
+
+        async function simulateStorm() {
+            // Fake input data for the storm
+            const payload = {
+                rainfall: 118,
+                water_level: 72,
+                wind_speed: 60,
+                road_blocks: 6,
+                power_outage: 1
+            };
+            
+            try {
+                const response = await fetch('/api/predict/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('risk-score').innerText = data.risk_score + '/100';
+                document.getElementById('confidence').innerText = data.confidence + '%';
+                
+                const statusEl = document.getElementById('risk-status');
+                statusEl.innerText = data.risk_level;
+                
+                if(data.risk_score > 85) {
+                    statusEl.className = 'font-bold text-red-500 animate-pulse';
+                    document.getElementById('ai-recommendation').classList.remove('hidden');
+                    
+                    // Show AI Explanation
+                    const explainPanel = document.getElementById('explainable-ai');
+                    explainPanel.classList.remove('hidden');
+                    const factorsList = document.getElementById('factors-list');
+                    factorsList.innerHTML = '';
+                    for (const [key, val] of Object.entries(data.factors)) {
+                        factorsList.innerHTML += `<div class="flex justify-between bg-gray-900 p-2 rounded"><span>${key}</span><span class="font-bold text-red-400">+${val} pts</span></div>`;
+                    }
+                    
+                    if(riskCircle) {
+                        riskCircle.setStyle({color: 'red', fillColor: '#f00', fillOpacity: 0.5});
+                        riskCircle.setPopupContent(`<b>Velachery</b><br>Risk: ${data.risk_level}`).openPopup();
+                        
+                        // Add emergency icons
+                        L.marker([12.9750, 80.2200]).addTo(map).bindPopup("Priority: CRITICAL<br>Emergency: Flood Rescue").openPopup();
+                        L.marker([12.9850, 80.2100]).addTo(map).bindPopup("Priority: HIGH<br>Emergency: Medical Evacuation");
+                    }
+                } else if(data.risk_score > 65) {
+                    statusEl.className = 'font-bold text-orange-500';
+                } else {
+                    statusEl.className = 'font-bold text-green-500';
+                }
+                
+                // Update text
+                document.getElementById('rainfall').innerText = payload.rainfall + ' mm';
+                document.getElementById('water-level').innerText = payload.water_level + ' cm';
+                document.getElementById('road-blocks').innerText = payload.road_blocks;
+                document.getElementById('power').innerText = (payload.power_outage ? '63%' : '0%');
+                
+            } catch(e) {
+                console.error("Failed to predict", e);
+            }
+        }
+    </script>
+</body>
+</html>
