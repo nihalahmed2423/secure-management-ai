@@ -1,0 +1,6 @@
+name = "secure-management-ai"
+main = "src/index.js"
+compatibility_date = "2026-08-28"
+
+[assets]
+directory = "frontend"
