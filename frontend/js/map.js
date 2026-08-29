@@ -68,7 +68,7 @@ function triggerPincodePrediction() {
 }
 
 function fetchPredictAPI(state, pincode, lat, lon, placeName) {
-  fetch("/api/predict", {
+  fetch((window.API_BASE || "") + "/api/predict", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ state: state, pincode: pincode, lat: lat, lon: lon })
