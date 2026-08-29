@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECURE MANAGEMENT - AI Disaster Intelligence</title>
+  
+  <!-- Styling & Map Libraries -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- JS Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Entry Visual Experience (Three.js) -->
+  <section id="hero-landing">
+    <div id="three-canvas-container"></div>
+    <div class="hero-overlay">
+      <h1>SECURE MANAGEMENT</h1>
+      <p class="subtitle">AI-POWERED DISASTER INTELLIGENCE</p>
+      
+      <div id="contact-form" style="margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <label for="user-phone" style="font-size: 0.9rem; color: #cbd5e1; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Emergency Contact Registration</label>
+        <input type="tel" id="user-phone" placeholder="Enter Mobile Number" style="padding: 1rem; font-size: 1.1rem; border-radius: 4px; border: 2px solid var(--accent-cyan); background: rgba(15, 23, 42, 0.8); color: #fff; text-align: center; width: 280px; box-sizing: border-box; font-weight: bold; letter-spacing: 1px;">
+        <button id="btn-enter" onclick="enterCommandCenter()" style="margin-top: 10px; width: 280px;">ENTER COMMAND CENTER</button>
+        <div id="login-status" style="color: var(--risk-high); font-size: 0.9rem; margin-top: 5px; height: 15px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Command Center Dashboard -->
+  <main id="command-center" class="hidden">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <h2>SECURE MANAGEMENT</h2>
+      <div class="system-status">
+        <span class="status-dot"></span> SYSTEM ONLINE
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Control Panel -->
+      <section class="panel control-panel">
+        <h3>LOCATION SELECTOR</h3>
+        <div class="form-group" style="background: rgba(0, 242, 255, 0.05); padding: 15px; border-radius: 6px; border: 1px solid var(--accent-cyan); margin-bottom: 1rem;">
+          <label for="pincode-input" style="color: var(--accent-cyan); font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px;">Enter Pincode (Town/Village)</label>
+          <input type="text" id="pincode-input" placeholder="Try 781001 (Assam) or 400001 (Mumbai)" style="width: 100%; padding: 0.8rem; font-size: 1.1rem; background: #0f172a; border: 2px solid #334155; color: #fff; border-radius: 4px; margin-bottom: 0.5rem; box-sizing: border-box;">
+          <div id="detected-location" style="font-size: 0.85rem; color: #94a3b8; min-height: 20px; font-style: italic;">Awaiting input...</div>
+        </div>
+        <div class="button-group">
+          <button id="btn-predict" onclick="triggerPincodePrediction()">PREDICT RISK</button>
+          <button id="btn-cancel" onclick="resetSelection()">RESET</button>
+        </div>
+
+        <!-- Locality Details Card -->
+        <div id="locality-details-card" class="form-group hidden" style="background: rgba(0, 242, 255, 0.05); padding: 15px; border-radius: 6px; border: 1px solid var(--accent-cyan); margin-top: 1.5rem;">
+          <h4 style="color: var(--accent-cyan); margin: 0 0 8px 0; font-size: 1.1rem;">📍 LOCALITY DETAILS</h4>
+          <div id="locality-name" style="font-size: 1rem; color: #fff; margin-bottom: 5px; font-weight: bold;">--</div>
+          <div id="locality-district" style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 5px;">--</div>
+          <div id="locality-state" style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 5px;">--</div>
+          <div id="locality-coords" style="font-size: 0.85rem; color: #94a3b8; font-family: monospace;">--</div>
+        </div>
+
+        <!-- 2-Way Tracker / SOS Feature -->
+        <div class="form-group" style="background: rgba(255, 51, 68, 0.1); padding: 15px; border-radius: 6px; border: 1px solid var(--risk-high); margin-top: 1.5rem;">
+          <h4 style="color: var(--risk-high); margin: 0 0 8px 0; font-size: 1.1rem;">🚨 EMERGENCY SOS</h4>
+          <p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">Broadcast your precise live location. This allows Rescue Teams to track you, while you track them on the map.</p>
+          <button id="btn-sos" onclick="triggerSOS()" style="width: 100%; padding: 0.8rem; background: var(--risk-high); color: #fff; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.3s;">SHARE LIVE LOCATION</button>
+          <div id="sos-status" style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--risk-high); display: none; font-weight: bold;"></div>
+        </div>
+
+        <hr class="panel-divider" />
+
+        <!-- Area to Secure First -->
+        <div id="priority-location-card" class="priority-card hidden">
+          <h4>🚨 AREA TO SECURE FIRST</h4>
+          <div id="priority-location-name" class="priority-title">--</div>
+          <div id="priority-score" class="priority-score-badge">--%</div>
+          <div id="priority-risk-tag" class="risk-tag">--</div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 15px; margin-bottom: 15px;">
+              <button style="flex: 1; background: rgba(255, 51, 68, 0.15); border: 1px solid var(--risk-high); color: #fff; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; cursor: default;">
+                  👥 Civilians at Risk<br><span id="val-people-risk" style="font-size: 1.2rem; color: var(--risk-high); display: block; margin-top: 5px;">0</span>
+              </button>
+              <button style="flex: 1; background: rgba(255, 165, 0, 0.15); border: 1px solid var(--risk-mod); color: #fff; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; cursor: default;">
+                  🚑 Vehicles Required<br><span id="val-vehicles-needed" style="font-size: 1.2rem; color: var(--risk-mod); display: block; margin-top: 5px;">0</span>
+              </button>
+          </div>
+
+          <div class="recommendations">
+            <strong>Recommended Resources:</strong>
+            <ul id="priority-resource-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center Map View -->
+      <section class="panel map-panel">
+        <h3>RISK SURVEILLANCE MAP</h3>
+        <div id="map"></div>
+      </section>
+
+      <!-- Right Analytics & Priority Column -->
+      <section class="panel analytics-panel">
+        <h3>SITUATIONAL AWARENESS</h3>
+        
+        <div id="weather-card" class="data-card">
+          <h4>Live Weather Telemetry</h4>
+          <div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 10px;">
+              <button style="flex: 1; background: rgba(0, 242, 255, 0.15); border: 1px solid var(--accent-cyan); color: #fff; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; cursor: default;">
+                  🌡️ Temperature<br><span id="val-temp" style="font-size: 1.2rem; color: var(--accent-cyan); display: block; margin-top: 5px;">-- °C</span>
+              </button>
+              <button style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid #94a3b8; color: #fff; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; cursor: default;">
+                  💨 Wind<br><span id="val-wind" style="font-size: 1.2rem; color: #cbd5e1; display: block; margin-top: 5px;">-- km/h</span>
+              </button>
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+              <button style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid #94a3b8; color: #fff; padding: 10px 5px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: default;">
+                  🌧️ Rainfall<br><span id="val-rain" style="font-size: 1.1rem; color: #cbd5e1; display: block; margin-top: 5px;">-- mm</span>
+              </button>
+              <button style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid #94a3b8; color: #fff; padding: 10px 5px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: default;">
+                  🧭 Pressure<br><span id="val-pressure" style="font-size: 1.1rem; color: #cbd5e1; display: block; margin-top: 5px;">-- hPa</span>
+              </button>
+          </div>
+        </div>
+
+        <!-- Live Asset Tracker -->
+        <h3 style="margin-top: 1.5rem;">RESCUE TEAM TRACKER (25km Radius)</h3>
+        <div id="asset-tracker-list" class="data-card" style="padding: 0.8rem; background: #0f172a; border-radius: 4px; border-left: 4px solid var(--risk-less); font-size: 0.9rem;">
+          <div class="queue-placeholder">Awaiting dispatch orders...</div>
+        </div>
+
+        <!-- Real Nearby Hospitals -->
+        <div id="hospital-card" class="data-card hidden" style="margin-top: 1rem; padding: 0.8rem; background: rgba(34, 204, 102, 0.1); border: 1px solid var(--risk-none); border-radius: 4px;">
+          <h4 style="margin: 0 0 0.5rem 0; color: var(--risk-none);">🏥 Hospitals Present in Surroundings (25km Radius)</h4>
+          <ul id="hospital-list" style="margin: 0; padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.6; list-style-type: none; padding-left: 0;">
+          </ul>
+        </div>
+
+        <h3>EMERGENCY PRIORITY</h3>
+        <div id="priority-list" class="priority-queue">
+          <div class="queue-placeholder">Select a location to assess risk priorities.</div>
+        </div>
+
+        <!-- Emergency Communication to Locals -->
+        <h3 style="margin-top: 1.5rem;">PUBLIC COMMUNICATIONS</h3>
+        <div id="comm-card" class="data-card" style="background: rgba(0, 242, 255, 0.05); border: 1px solid var(--accent-cyan); padding: 0.8rem; border-radius: 4px;">
+          <h4 style="margin: 0 0 0.5rem 0; color: var(--accent-cyan);">📡 Auto-Generated Broadcast</h4>
+          <textarea id="public-alert-msg" rows="3" style="width: 100%; background: #0f172a; color: #fff; border: 1px solid #334155; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box;" readonly>Awaiting risk analysis...</textarea>
+          <button id="btn-broadcast" onclick="broadcastAlert()" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; background: var(--accent-cyan); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.3s;">BROADCAST TO LOCALS & NATIONAL CHANNELS</button>
+          <div id="broadcast-status" style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--risk-none); display: none;">✅ Alerts transmitted to local networks and National Broadcast Channels!</div>
+        </div>
+      </section>
+      
+    </div>
+
+    <!-- Alert Modal / Banner -->
+    <div id="alert-banner" class="alert-banner hidden">
+      <div id="alert-content"></div>
+      <button onclick="closeAlert()">Acknowledge</button>
+    </div>
+  </main>
+
+  <script src="config.js?v=1.0"></script>
+  <script src="js/app.js?v=2.4"></script>
+  <script src="js/map.js?v=2.4"></script>
+</body>
+</html>
