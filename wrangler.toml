@@ -1,6 +1,0 @@
-[build]
-  command = ""
-  destination = "frontend"
-
-[functions]
-  directory = "functions"
