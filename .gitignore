@@ -32,3 +32,16 @@ rewrite_map.py
 *.log
 .DS_Store
 Thumbs.db
+
+*.exe
+*.pdf
+SECURE MANAGEMENT*
+Secure_System*
+standalone*
+fix*.py
+rewrite*.py
+rescue_teams.db
+backend/rescue_teams.db
+venv/
+__pycache__/
+*.pyc
